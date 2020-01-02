@@ -1,46 +1,22 @@
-import 'package:flutter/cupertino.dart';
-import 'package:quiqui/assets/images.dart';
+import 'package:quiqui/imagehandler.dart';
 import 'dart:core';
 import 'dart:math';
-
-List<Dog> jsonHandler(file, key) {
-  return file[key].map<Dog>((json) => Dog.fromJson(json)).toList();
-}
-
-class Dog {
-  final String name;
-  final String file;
-
-  Dog({this.name, this.file});
-
-  factory Dog.fromJson(Map<String, dynamic> json) {
-    return Dog(
-      name: json['name'] as String,
-      file: json['filepath'] as String,
-    );
-  }
-
-  String getName() {
-    return this.name;
-  }
-
-  String getFile() {
-    return this.file;
-  }
-}
+import 'package:quiqui/Dog.dart';
 
 class Quiz {
   List<Dog> dogs;
   int score = 0;
   int dogIndex = 0;
   List<Dog> seen;
-  Dog prev;
+  int total;
   final random = Random();
+  final ImageHandler images = ImageHandler();
 
   Quiz() {
-    this.dogs = shuffle(jsonHandler(images.json, 'dogs'));
+  	this.dogs = shuffle(images.jsonHandler('dogs'));
     this.seen = new List();
-  } // Not sure what to put in the constructor
+    this.total = this.dogs.length;
+  }
 
   void correct() {
   	if (!(dogs.length > 0)) return;
@@ -79,9 +55,8 @@ class Quiz {
 	  return items;
   }
 
-  int getScore() {
+  int get getScore {
   	return this.score;
   }
-
 
 }
