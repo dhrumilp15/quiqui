@@ -1,10 +1,18 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'quiz.dart';
 import 'dart:async';
-import 'package:quiqui/assets/images.dart';
-import 'package:quiver/async.dart';
 import 'package:provider/provider.dart';
+import 'package:quiver/async.dart';
+import 'dart:core';
+
+import 'package:quiqui/AnswerView.dart';
+import 'package:quiqui/quiz.dart';
+import 'package:quiqui/flipCard.dart';
+import 'package:quiqui/ImageView.dart';
+import 'package:quiqui/userInput.dart';
+import 'package:quiqui/Dog.dart';
+import 'package:collection/collection.dart';
+
 
 void main() => runApp(MyApp());
 
@@ -13,9 +21,9 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 	return MaterialApp(
-	  title: 'Flutter Demo',
+	  title: 'Qui Qui',
 	  theme: ThemeData(
-		primarySwatch: Colors.blue,
+			primarySwatch: Colors.blue,
 	  ),
 	  home: MyHomePage(),
 	);
@@ -24,14 +32,17 @@ class MyApp extends StatelessWidget {
 
 class MyHomePage extends StatefulWidget {
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  MyHomePageState createState() => MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  var quiz;
-  int _start = 10;
-  int _current = 10;
+class MyHomePageState extends State<MyHomePage> {
+  Quiz quiz;
+  static final int totalTime = 45;
+  int _start = totalTime;
+  int _current = totalTime;
   var sub;
+  GlobalKey<FlipCardState> cardKey = GlobalKey<FlipCardState>();
+  GlobalKey<MyHomePageState> mainKey = GlobalKey<MyHomePageState>(); // I'm sorry I don't know how to fix this... :_(
 
   @override
 	void initState() {
@@ -39,24 +50,34 @@ class _MyHomePageState extends State<MyHomePage> {
   	initQuiz();
 	}
 
-	void initQuiz() {
-  	quiz = Quiz();
-  	Timer.periodic(Duration(milliseconds: 20), onTick);
-  	try {
-		  this.sub.cancel();
-	  } catch (stackTrace) {print(stackTrace);}
-		  initTimer();
-		  startTimer();
-	  }
+	@override
+	void dispose() {
+  	super.dispose();
+	}
 
-	void onTick(Timer timer) {
+	void initQuiz() {
+		quiz = Quiz();
+		Timer.periodic(Duration(milliseconds: 20), onTick); // Update the app every 20 ms
+
+		try {
+			this.sub.cancel();
+		} catch (stackTrace) {
+			print(stackTrace);
+		}
+		
+		initTimer();
+		startTimer();
+  }
+
+  void onTick(Timer timer) {
   	setState(() {});
 	}
 
 	void initTimer() {
-  	_start = 10;
-  	_current = 10;
+  	_start = totalTime;
+  	_current = totalTime;
 	}
+
 
 	void startTimer() {
 		CountdownTimer countDownTimer = new CountdownTimer(
@@ -70,66 +91,82 @@ class _MyHomePageState extends State<MyHomePage> {
 		});
 
 		sub.onDone(() {
-			showAlertDialog(context);
+			dontKnow();
 			sub.cancel();
 		});
 	}
 
-	void showAlertDialog(BuildContext context) {
-	  Widget gotIt = FlatButton(
-			  child: Text('Got it!'),
-			  onPressed: () {
-				  quiz.incorrect();
-				  this.sub.cancel();
-				  initTimer();
-				  Navigator.of(context).pop();
-				  startTimer();
-			  }
-	  );
+	void check(Dog userAnswer) {
+  	print("userAnswer.map: " + userAnswer?.map.toString());
+  	print("quiz.getDog(quiz.dogIndex).map" + quiz.getDog(quiz.dogIndex).map.toString());
 
-	  AlertDialog alert = AlertDialog(
-		  title: Text("Answer"),
-		  content: Text(
-				  'This dog\'s name is ${quiz.getDog(quiz.dogIndex).getName()}'),
-		  actions: [
-			  gotIt,
-		  ],
-	  );
 
-	  showDialog(
-			  context: context,
-			  builder: (BuildContext context) {
-				  return alert;
-			  }
-	  );
-  }
+  	if (DeepCollectionEquality().equals(userAnswer?.map, quiz.getDog(quiz.dogIndex).map)) { // because identical() did not work
+  		print('THAT WAS RIGHT');
+  		this.sub.cancel();
+  		initTimer();
+  		quiz.correct();
+  		startTimer();
+	  } else {
+		  dontKnow();
+	  }
+	}
+
+	void dontKnow() {
+		print("unlucky - that's wrong");
+		this.sub.cancel();
+		cardKey.currentState.flipCard();
+//		Scaffold.of(context)
+//				.showSnackBar(SnackBar(content: Text('Oh noes!')));
+		Future.delayed(Duration(seconds: 5), () {
+			cardKey.currentState.flipCard();
+			initTimer();
+			if (cardKey.currentState.isForward) quiz.incorrect();
+			startTimer();
+		}); // Give the player 5 seconds to realize their mistake
+	}
 
 	@override
   Widget build(BuildContext context) {
   	return Scaffold(
 			    appBar: AppBar(
-				    title: Text('Dogs: Qui, Qui (Who is Who)'),
+				    title: Text('Qui Qui'),
 			    ),
-			    body: Column(
-					    children: <Widget>[
-						    Stack(
-							    children: <Widget>[
-								    Container(
-									    child: (quiz.dogs.length > 0) ? ImageView(quiz.getDog(quiz.dogIndex).getFile()) : ImageView('lib/assets/images/icon.png'),
-								    ),
-								    (quiz.dogs.length > 0) ? countDown(_current) : Container(height:0)
-							    ]
-						    ),
-						    Divider(),
-						    Column(
-								    mainAxisAlignment: MainAxisAlignment.center,
-								    children: (quiz.dogs.length > 0) ? [yesNo(quiz,this)] : [finalPage(quiz, this)]
+			    body: SingleChildScrollView(
+					    child: Column(
+					      children: <Widget>[
+								    Column(
+									    children: <Widget>[
+										    Stack(
+												    children: <Widget>[
+													    (quiz.dogs.length > 0) ? countDown(_current) : Container(height:0),
+													    Container(
+														    child: (quiz.dogs.length > 0) ?
+														    FlipCard(
+															    key: cardKey,
+															    front: ImageView(quiz.getDog(quiz.dogIndex).getFile),
+															    back: AnswerView(quiz.getDog(quiz.dogIndex)),
+														    )
+																    : ImageView('lib/assets/images/icon.png'),
+													    ),
+												    ]
+										    ),
+										    Divider(),
+										    (quiz.dogs.length > 0) ? userInput(
+												    onSubmit: (Dog userAnswer) {
+												    	check(userAnswer);
+												    }
+										    ) : finalPage(quiz)
+									    ]
+								    )
+					      ]
+							    )
 						    )
-					    ]
-			    )
-	    );
+			    );
     }
   }
+  typedef onSubmitCallback = void Function(Dog userAnswer);
+
 
 class countDown extends StatelessWidget {
   int _current;
@@ -154,125 +191,33 @@ class countDown extends StatelessWidget {
   }
 }
 
-class ImageView extends StatelessWidget {
-  final String file;
-  final double dimension = 305.0;
-  ImageView(this.file);
-
-  @override
-  Widget build(BuildContext context) {
-  	return Container(
-	    padding: EdgeInsets.only(top : 50.0, bottom: 50.0),
-        child: Row(
-		        mainAxisAlignment: MainAxisAlignment.center,
-		        children: <Widget>[
-		        	Container(
-				          width:dimension,
-					        height: dimension,
-					        decoration: BoxDecoration(
-				            borderRadius: BorderRadius.circular(8.0),
-				            border: Border.all(
-					            color: Colors.blue,
-					            width: 5.0
-				            ),
-							        image: DecorationImage(
-								        image: ExactAssetImage(file),
-								        fit: BoxFit.fill,
-					        )
-                ),
-              )
-      ]
-    )
-    );
-  }
-}
-
-class yesNo extends StatelessWidget {
-  final Quiz quiz;
-  final _MyHomePageState MyHomePageState;
-
-  yesNo(this.quiz, this.MyHomePageState);
-
-	@override
-  Widget build(BuildContext context) {
-    return Container(
-		    child: Row(
-				    mainAxisAlignment: MainAxisAlignment.center,
-				    children: <Widget>[
-					    ButtonTheme(
-						    minWidth: MediaQuery
-								    .of(context)
-								    .size
-								    .width / 2,
-						    height: 200,
-						    child: RaisedButton(
-							    onPressed: () {
-								    quiz.correct();
-								    if (quiz.dogs.length > 0) {
-									    MyHomePageState.sub.cancel();
-									    MyHomePageState.initTimer();
-									    MyHomePageState.startTimer();
-								    }
-							    },
-							    color: Colors.green,
-							    child: Icon(Icons.check),
-						    ),
-					    ),
-					    ButtonTheme(
-						    minWidth: MediaQuery
-								    .of(context)
-								    .size
-								    .width / 2,
-						    height: 200,
-						    child: RaisedButton(
-							    onPressed: () {
-								    if (quiz.dogs.length > 0)
-									    MyHomePageState.showAlertDialog(context);
-								    else
-									    null;
-							    },
-							    color: Colors.red,
-							    child: Icon(Icons.close),
-						    ),
-					    )
-				    ]
-		    )
-    );
-  }
-}
-
 class finalPage extends StatelessWidget {
 	final Quiz quiz;
-	final _MyHomePageState MyHomePageState;
-	finalPage(this.quiz, this.MyHomePageState);
+	finalPage(this.quiz);
 
 	@override
-  Widget build(BuildContext context) {
-    return Container(
-	    child: Column(
-			    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-			    children: [
-				    Text(
-						    'You got ${quiz.getScore()} out of ${images.json['dogs'].length} correct!',
-						    style: TextStyle(fontSize: 20.0)
-				    ),
-				    Text(
-						    '',
-						    style: TextStyle(fontSize: 20.0)
-				    ),
-				    ButtonTheme(
-						    child: RaisedButton(
-								    child: Text(
-										    'Retry?',
-										    style: TextStyle(color: Colors.white)
-								    ),
-								    onPressed: () {
-									    MyHomePageState.initQuiz();
-								    }
-						    )
-				    ),
-			    ]
-	    )
-    );
-  }
+	Widget build(BuildContext context) {
+		return
+				Column(
+						mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+						children: [
+							Text(
+									'You got ${quiz.getScore} out of ${quiz.total} correct!',
+									style: TextStyle(fontSize: 20.0)
+							),
+							ButtonTheme(
+									child: RaisedButton(
+											child: Text(
+													'Retry?',
+													style: TextStyle(color: Colors.white)
+											),
+											onPressed: () {
+												Provider.of<MyHomePageState>(context).initQuiz();
+											}
+									)
+							),
+						]
+//				)
+		);
+	}
 }
