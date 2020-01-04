@@ -3,7 +3,6 @@ import 'dart:core';
 
 import 'package:quiqui/imagehandler.dart';
 import 'package:quiqui/Dog.dart';
-import 'package:quiqui/typedefs.dart';
 
 typedef onSubmitCallback = void Function(Dog userAnswer);
 
@@ -30,8 +29,6 @@ class _userInputState extends State<userInput> {
   void dispose() {
   	super.dispose();
   }
-
-
 
 	@override
   Widget build(BuildContext context) {

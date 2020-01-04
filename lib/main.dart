@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:provider/provider.dart';
 import 'package:quiver/async.dart';
 import 'dart:core';
+import 'package:collection/collection.dart';
 
 import 'package:quiqui/AnswerView.dart';
 import 'package:quiqui/quiz.dart';
@@ -11,7 +12,7 @@ import 'package:quiqui/flipCard.dart';
 import 'package:quiqui/ImageView.dart';
 import 'package:quiqui/userInput.dart';
 import 'package:quiqui/Dog.dart';
-import 'package:collection/collection.dart';
+import 'package:quiqui/LandingPage.dart';
 
 
 void main() => runApp(MyApp());
@@ -22,27 +23,52 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
 	return MaterialApp(
 	  title: 'Qui Qui',
+	  home: LandingPage(),
+//	  routes: {
+//	  	LandingPage.routeName: (context) => LandingPage(),
+//		  MyHomePage.routeName: (context) => MyHomePage()
+//	  },
+
+		onGenerateRoute: (settings) {
+	  	if (settings.name == MyHomePage.routeName) {
+	  		final Args args = settings.arguments;
+
+	  		return MaterialPageRoute(
+				  builder: (context) {
+				  	return MyHomePage(
+						  imageJson: args.json
+					  );
+				  }
+			  );
+		  }
+		},
 	  theme: ThemeData(
 			primarySwatch: Colors.blue,
 	  ),
-	  home: MyHomePage(),
+//	  home: LandingPage(),
 	);
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  @override
-  MyHomePageState createState() => MyHomePageState();
+  static const routeName = '/HomePage';
+
+	MyHomePage({Key key, this.imageJson}) : super(key : key);
+
+  final Map<String, dynamic> imageJson;
+
+	@override
+  _MyHomePageState createState() => _MyHomePageState();
 }
 
-class MyHomePageState extends State<MyHomePage> {
+
+class _MyHomePageState extends State<MyHomePage> {
   Quiz quiz;
-  static final int totalTime = 45;
+  static final int totalTime = 20;
   int _start = totalTime;
   int _current = totalTime;
   var sub;
   GlobalKey<FlipCardState> cardKey = GlobalKey<FlipCardState>();
-  GlobalKey<MyHomePageState> mainKey = GlobalKey<MyHomePageState>(); // I'm sorry I don't know how to fix this... :_(
 
   @override
 	void initState() {
@@ -55,8 +81,9 @@ class MyHomePageState extends State<MyHomePage> {
   	super.dispose();
 	}
 
-	void initQuiz() {
-		quiz = Quiz();
+	void initQuiz() async {
+  	print('widget.imageJson: ${widget.imageJson}');
+		quiz = Quiz(widget.imageJson);
 		Timer.periodic(Duration(milliseconds: 20), onTick); // Update the app every 20 ms
 
 		try {
@@ -77,7 +104,6 @@ class MyHomePageState extends State<MyHomePage> {
   	_start = totalTime;
   	_current = totalTime;
 	}
-
 
 	void startTimer() {
 		CountdownTimer countDownTimer = new CountdownTimer(
@@ -132,36 +158,41 @@ class MyHomePageState extends State<MyHomePage> {
 			    appBar: AppBar(
 				    title: Text('Qui Qui'),
 			    ),
-			    body: SingleChildScrollView(
-					    child: Column(
-					      children: <Widget>[
-								    Column(
-									    children: <Widget>[
-										    Stack(
-												    children: <Widget>[
-													    (quiz.dogs.length > 0) ? countDown(_current) : Container(height:0),
-													    Container(
-														    child: (quiz.dogs.length > 0) ?
-														    FlipCard(
-															    key: cardKey,
-															    front: ImageView(quiz.getDog(quiz.dogIndex).getFile),
-															    back: AnswerView(quiz.getDog(quiz.dogIndex)),
-														    )
-																    : ImageView('lib/assets/images/icon.png'),
-													    ),
-												    ]
-										    ),
-										    Divider(),
-										    (quiz.dogs.length > 0) ? userInput(
-												    onSubmit: (Dog userAnswer) {
-												    	check(userAnswer);
-												    }
-										    ) : finalPage(quiz)
-									    ]
-								    )
-					      ]
-							    )
-						    )
+			  body: LayoutBuilder(builder: (context, constraints) {
+				  return SingleChildScrollView(
+					  child: ConstrainedBox(
+						  constraints: BoxConstraints(minWidth: constraints.maxWidth, minHeight: constraints.maxHeight),
+						  child: IntrinsicHeight(
+								  child: Column(
+									  mainAxisSize: MainAxisSize.max,
+										  children: <Widget>[
+											  Expanded(
+												  child: Stack(
+														  children: <Widget>[
+															  (quiz.dogs.length > 0) ? countDown(_current) : Container(height:0),
+															  (quiz.dogs.length > 0) ?
+															  FlipCard(
+																  key: cardKey,
+																  front: ImageView(quiz.getDog(quiz.dogIndex).getFile),
+																  back: AnswerView(quiz.getDog(quiz.dogIndex)),
+															  )
+																	  : ImageView('lib/assets/images/icon.png'),
+														  ]
+												  ),
+											  ),
+											  Divider(),
+											  (quiz.dogs.length > 0) ? userInput(
+													  onSubmit: (Dog userAnswer) {
+														  check(userAnswer);
+													  }
+											  ) : finalPage(quiz)
+										  ]
+								  )
+						  )
+					  )
+				  );
+			  })
+//
 			    );
     }
   }
@@ -212,7 +243,7 @@ class finalPage extends StatelessWidget {
 													style: TextStyle(color: Colors.white)
 											),
 											onPressed: () {
-												Provider.of<MyHomePageState>(context).initQuiz();
+												Provider.of<_MyHomePageState>(context).initQuiz();
 											}
 									)
 							),
@@ -220,4 +251,10 @@ class finalPage extends StatelessWidget {
 //				)
 		);
 	}
+}
+
+class Args {
+	final Map<String, dynamic> json;
+
+	Args(this.json);
 }

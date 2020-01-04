@@ -1,6 +1,6 @@
 
 class Dog {
-	// The name and file fields are required so that the app doesn't break
+	// The name and file fields are required as the most basic amount of information about the images
 	String name;
 	String file;
 	Map<String, dynamic> details = new Map<String, dynamic>(); // any other information
@@ -30,7 +30,9 @@ class Dog {
 	}
 
 	String get getFile {
-		return this.file;
+		String path = "/data/user/0/com.example.quiqui/app_flutter";
+
+		return path + this.file;
 	}
 
 	void setName(String name) {
