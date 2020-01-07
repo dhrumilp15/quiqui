@@ -8,8 +8,9 @@ typedef onSubmitCallback = void Function(Dog userAnswer);
 
 class userInput extends StatefulWidget {
 	final onSubmitCallback onSubmit;
+	final List info;
 
-	userInput({this.onSubmit});
+	userInput({this.onSubmit, this.info});
 
 	@override
   _userInputState createState() => _userInputState();
@@ -17,8 +18,8 @@ class userInput extends StatefulWidget {
 
 class _userInputState extends State<userInput> {
 	final GlobalKey _formKey = GlobalKey<FormState>();
-	Dog userAnswer = Dog(name: '', file: '', details: {});
-	final List<String> info = ImageHandler().getInfo();
+
+	Dog _userAnswer = Dog(name: '', file: '', details: {});
 
   @override
   void initState() {
@@ -54,7 +55,7 @@ class _userInputState extends State<userInput> {
 
 															if (form.validate()) {
 																form.save();
-																widget.onSubmit(userAnswer);
+																widget.onSubmit(_userAnswer);
 																form.reset();
 																Scaffold.of(context)
 																		.showSnackBar(SnackBar(content: Text('Processing Data')));
@@ -107,10 +108,10 @@ class _userInputState extends State<userInput> {
   List<Widget> buildListOfRows() {
 	  var rows = new List<Widget>();
 
-	  for (int i = 0; i < (info.length/2).ceil() + 1; i += 2) {
+	  for (int i = 0; i < (widget.info.length/2).ceil() + 1; i += 2) {
 		  rows.add(
 				  Row(
-					  mainAxisAlignment: (i + 1 < info.length) ? MainAxisAlignment.spaceEvenly : MainAxisAlignment.center,
+					  mainAxisAlignment: (i + 1 < widget.info.length) ? MainAxisAlignment.spaceEvenly : MainAxisAlignment.center,
 					  children: <Widget>[
 						  Flexible(
 							  child: TextFormField(
@@ -123,7 +124,7 @@ class _userInputState extends State<userInput> {
 
 									  validator: (value) {
 										  if (value.isEmpty) {
-											  return 'Please enter this dog\'s ${info[i]}';
+											  return 'Please enter this dog\'s ${widget.info[i]}';
 										  }
 									  },
 
@@ -132,15 +133,15 @@ class _userInputState extends State<userInput> {
 									  },
 
 									  onSaved: (val) {
-									  	if (info[i] == 'name') {
-									  		userAnswer.setName(val);
+									  	if (widget.info[i] == 'name') {
+									  		_userAnswer.setName(val);
 										  } else {
-									  		userAnswer.details[info[i]] = val;
+									  		_userAnswer.details[widget.info[i]] = val;
 										  }
 									  }
 							  ),
 						  ),
-						  (i + 1 < info.length) ?
+						  (i + 1 < widget.info.length) ?
 						  Flexible(
 								  child: TextFormField(
 										  style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.normal),
@@ -152,7 +153,7 @@ class _userInputState extends State<userInput> {
 
 										  validator: (value) {
 											  if (value.isEmpty) {
-												  return 'Please enter this dog\'s ${info[i + 1]}';
+												  return 'Please enter this dog\'s ${widget.info[i + 1]}';
 											  }
 										  },
 
@@ -161,10 +162,10 @@ class _userInputState extends State<userInput> {
 										  },
 
 										  onSaved: (val) {
-										  	if (info[i+1] == 'name') {
-												  userAnswer.setName(val);
+										  	if (widget.info[i+1] == 'name') {
+												  _userAnswer.setName(val);
 											  } else {
-												  userAnswer.details[info[i + 1]] = val;
+												  _userAnswer.details[widget.info[i + 1]] = val;
 											  }
 										  }
 								  )
@@ -177,7 +178,7 @@ class _userInputState extends State<userInput> {
   }
 
   String getLabelText(int index) {
-  	return info[index][0].toUpperCase() + info[index].substring(1);
+  	return widget.info[index][0].toUpperCase() + widget.info[index].substring(1);
   }
 
 

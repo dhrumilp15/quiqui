@@ -4,6 +4,7 @@ import 'dart:convert';
 
 import 'package:quiqui/imagehandler.dart';
 import 'package:quiqui/main.dart';
+import 'package:quiqui/MyHomePage.dart';
 
 class LandingPage extends StatefulWidget {
 	static const routeName = '/';
@@ -13,13 +14,15 @@ class LandingPage extends StatefulWidget {
 }
 
 class _LandingPageState extends State<LandingPage> {
+	final String repoLocation = "https://api.github.com/repos/dhrumilp15/quiqui_imgs/contents/";
+
 	Future<List<String>> zips;
 	ImageHandler imageHandler;
 
 	@override
 	void initState() {
 		super.initState();
-		zips = _fetchZips("https://api.github.com/repos/dhrumilp15/quiqui_imgs/contents/");
+		zips = _fetchZips(repoLocation);
 
 	}
 
@@ -42,7 +45,7 @@ class _LandingPageState extends State<LandingPage> {
 			});
 			return zips;
 		} else {
-			throw Exception("UNLUCKY - Github call for Download URL failed!");
+			throw Exception("Oh No! - Github call for Download URL failed!");
 		}
 	}
 
@@ -65,15 +68,15 @@ class _LandingPageState extends State<LandingPage> {
 		);
 
 		await this.imageHandler.downloadImages();
+
+		var json = this.imageHandler.getJson();
+
 		Navigator.pop(context);
-
-		var sickoMode = this.imageHandler.getJson(); //sickoMode is the JSON
-
 		Navigator.pushReplacementNamed(
 			context,
 			MyHomePage.routeName,
-			arguments: Args(
-					sickoMode
+			arguments: RouteArgs(
+					json
 			)
 		);
 	}
@@ -95,20 +98,11 @@ class _LandingPageState extends State<LandingPage> {
 											mainAxisSize: MainAxisSize.min,
 											children: <Widget>[
 												Text("PEPSI MAN"),
-//												Padding(
-//														padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-//														child: new TextField(
-//															decoration: new InputDecoration(
-//																	hintText: "Type in here!"
-//															),
-//														)
-//												),
 												Flexible(
 													fit: FlexFit.loose,
 													child: ListView.builder(
 														shrinkWrap: true,
 															itemBuilder: (BuildContext context, int index) {
-//															return Text("Sicko mode");
 																return ExpansionTile(
 																		title: Text(snapshot.data[index].substring(0, snapshot.data[index].lastIndexOf('.zip'))[0].toUpperCase() +
 																				snapshot.data[index].substring(0, snapshot.data[index].lastIndexOf('.zip')).substring(1)),

@@ -1,13 +1,11 @@
 import 'dart:convert';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
-import 'dart:io' show Platform;
 import 'package:dio/dio.dart';
 import 'package:http/http.dart' as http;
 import 'package:archive/archive_io.dart';
 import 'package:archive/archive.dart';
-
-import 'package:quiqui/Dog.dart';
+import 'dart:async';
 
 class ImageHandler {
 	Map<String, dynamic> json;
@@ -24,33 +22,36 @@ class ImageHandler {
 		if (urlPath == null) {
 			this.json = jsonDefault;
 		}
-//		print(this.zipName);
-//		if (urlPath != null) {
-//			_downloadImages(urlPath);
-//		} else {
-//			this.json = jsonDefault;
-//		}
-//		print(this.json);
 	}
 
-	Future<String> get _loadPath async {
+	Future<String> get loadPath async {
 		Directory saveDir = null;
 
-		if (Platform.isAndroid) {
-//			saveDir = await getExternalStorageDirectory();
-			saveDir = await getApplicationDocumentsDirectory();
-		} else if (Platform.isIOS) {
-			saveDir = await getApplicationDocumentsDirectory();
-		} else {
-			throw Exception("This platform isn\'t supported");
-		}
+		saveDir = await getApplicationDocumentsDirectory();
 
 		return saveDir.path;
 	}
 
+	Future<void> _createDirectory(path) async {
+		final Directory directory = await Directory('$path/CapturedImages').create(recursive: true);
+		print("The directory $directory is created");
+	}
+
+	void listD(Directory dir) async {
+		Stream<FileSystemEntity> entityList = dir.list(recursive: true, followLinks: false);
+		await for (FileSystemEntity entity in entityList) print(entity.path);
+	}
+
 	Future<void> downloadImages() async {
-		final path = await _loadPath;
+		final path = await loadPath;
 		print('path: $path');
+
+		if (!await Directory(path).exists()) {
+			_createDirectory(path);
+		} else {
+			print("THE APPLICATION DOCUMENTS DIRECTORY EXISTS");
+			listD(Directory(path));
+		}
 
 		Map<String, dynamic> downloadJson = await _fetchDownloadUrl(this.urlPath, this.zipName);
 
@@ -100,8 +101,8 @@ class ImageHandler {
 		print("ENTERED THE UNZIP");
 		final bytes = File("$path/$zipName").readAsBytesSync();
 		
-		String saveDirName = "$path/${zipName.substring(0, zipName.lastIndexOf('.zip'))}";
-
+		String saveDirName = "$path/${zipName.substring(0, zipName.lastIndexOf('.zip'))}"; // Ex - dogs.zip, this will produce a dog/ folder for all the images
+//		String saveDirName = path;
 		// Decode the Zip file
 		final archive = ZipDecoder().decodeBytes(bytes);
 
@@ -112,18 +113,21 @@ class ImageHandler {
 			print('filename: $filename');
 			if (file.isFile) {
 					final data = file.content as List<int>;
+					print('Saved Location: $saveDirName/$filename');
 					File('$saveDirName/' + filename)
 						..createSync(recursive: true)
 						..writeAsBytesSync(data);
-					if (file.name == "${zipName.substring(0, zipName.lastIndexOf('.zip'))}/images.json") {
+					if (file.name == "images.json") {
 						this.json = await parseJson(File('$saveDirName/' + filename));
+						this.json[zipName.substring(0, zipName.lastIndexOf('.zip'))].forEach((dog) => {
+							dog["filepath"] = "$path/${zipName.substring(0, zipName.lastIndexOf('.zip'))}/${dog["filepath"]}"
+						});
 					}
 			} else {
 				Directory('$saveDirName/' + filename)
 					..create(recursive: true);
 			}
 		}
-
 		return;
 	}
 
@@ -146,10 +150,6 @@ class ImageHandler {
 
 	Map<String, dynamic> getJson() {
 		return this.json;
-	}
-
-	List<Dog> jsonHandler(key) {
-		return json[key].map<Dog>((dogJson) => Dog.fromJson(dogJson)).toList();
 	}
 
 	List<String> getInfo() {

@@ -1,4 +1,3 @@
-import 'package:quiqui/imagehandler.dart';
 import 'dart:core';
 import 'dart:math';
 import 'package:quiqui/Dog.dart';
@@ -12,7 +11,7 @@ class Quiz {
   final random = Random();
 
   Quiz(Map<String, dynamic> imageJson) {
-    this.dogs = shuffle(imageJson["dogs"].map<Dog>((dogJson) => Dog.fromJson(dogJson)).toList());
+    this.dogs = shuffle(jsonHandler(imageJson, "dogs"));
 	  this.seen = new List();
     this.total = this.dogs.length;
   }
@@ -56,6 +55,10 @@ class Quiz {
 
   int get getScore {
   	return this.score;
+  }
+
+  List<Dog> jsonHandler(Map<String, dynamic> json, String key) {
+	  return json[key].map<Dog>((dogJson) => Dog.fromJson(dogJson)).toList();
   }
 
 }

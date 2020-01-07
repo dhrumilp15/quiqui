@@ -1,3 +1,5 @@
+import "dart:io";
+import "package:path_provider/path_provider.dart";
 
 class Dog {
 	// The name and file fields are required as the most basic amount of information about the images
@@ -21,7 +23,7 @@ class Dog {
 		return Dog(
 			name: json['name'] as String,
 			file: json['filepath'] as String,
-			details: details as Map<String, dynamic>,
+			details: details,
 		);
 	}
 
@@ -30,9 +32,7 @@ class Dog {
 	}
 
 	String get getFile {
-		String path = "/data/user/0/com.example.quiqui/app_flutter";
-
-		return path + this.file;
+		return file;
 	}
 
 	void setName(String name) {
