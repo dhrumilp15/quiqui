@@ -14,6 +14,7 @@ import 'package:quiqui/userInput.dart';
 import 'package:quiqui/Dog.dart';
 import 'package:quiqui/finalPage.dart';
 import 'package:quiqui/main.dart';
+import 'package:quiqui/countdownTimer.dart';
 
 class MyHomePage extends StatefulWidget {
 	static const routeName = '/HomePage';
@@ -128,7 +129,12 @@ class _MyHomePageState extends State<MyHomePage> {
 										children: [
 											Stack(
 													children: <Widget>[
-														(quiz.dogs.length > 0) ? countDown(_current) : Container(height:0),
+														(quiz.dogs.length > 0) ?
+														Positioned(
+															top: 15,
+															right: MediaQuery.of(context).size.width/2,
+															child: countDown(this._current)
+														) : Container(height:0),
 														(quiz.dogs.length > 0) ?
 														FlipCard(
 															key: cardKey,

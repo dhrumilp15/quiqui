@@ -42,16 +42,14 @@ class ImageHandler {
 		await for (FileSystemEntity entity in entityList) print(entity.path);
 	}
 
+	Future<void> loadFromAppDocs() async {
+		final path = await loadPath;
+		this.json = await parseJson(File("$path/${this.zipName}/images.json"));
+	}
+
 	Future<void> downloadImages() async {
 		final path = await loadPath;
 		print('path: $path');
-
-		if (!await Directory(path).exists()) {
-			_createDirectory(path);
-		} else {
-			print("THE APPLICATION DOCUMENTS DIRECTORY EXISTS");
-			listD(Directory(path));
-		}
 
 		Map<String, dynamic> downloadJson = await _fetchDownloadUrl(this.urlPath, this.zipName);
 
@@ -117,6 +115,7 @@ class ImageHandler {
 					File('$saveDirName/' + filename)
 						..createSync(recursive: true)
 						..writeAsBytesSync(data);
+
 					if (file.name == "images.json") {
 						this.json = await parseJson(File('$saveDirName/' + filename));
 						this.json[zipName.substring(0, zipName.lastIndexOf('.zip'))].forEach((dog) => {

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
 
 import 'package:quiqui/imagehandler.dart';
 import 'package:quiqui/main.dart';
@@ -23,7 +25,6 @@ class _LandingPageState extends State<LandingPage> {
 	void initState() {
 		super.initState();
 		zips = _fetchZips(repoLocation);
-
 	}
 
 	@override
@@ -33,24 +34,60 @@ class _LandingPageState extends State<LandingPage> {
 
 	Future<List<String>> _fetchZips(String url) async {
 		final response = await http.get(url);
+		List<String> zips = [];
 
 		if (response.statusCode == 200) {
 			List<dynamic> githubJson = jsonDecode(response.body);
-			List<String> zips = [];
+
 
 			githubJson.forEach((json) {
 				if (json["name"].endsWith('.zip')) {
 					zips.add(json["name"]);
 				}
 			});
-			return zips;
 		} else {
 			throw Exception("Oh No! - Github call for Download URL failed!");
 		}
+
+		List<String> existingZip = await existingZips();
+		print(existingZip);
+
+		print(zips);
+
+		existingZip.forEach((zipName) {
+			print(zips);
+			if (!zips.contains("$zipName.zip")) {
+				zips.add(zipName);
+			}
+		});
+		print(zips);
+
+		return zips;
+	}
+
+	Future<List<String>> existingZips() async {
+		List<String> zips = new List<String>();
+
+		Stream<FileSystemEntity> entityList = (await loadPath).list(recursive: false, followLinks: false);
+		await for (FileSystemEntity entity in entityList) {
+			if (entity is Directory && entity.path.substring(entity.path.lastIndexOf('/')) != "/flutter_assets") {
+				var finalPath = entity.path.substring(entity.path.lastIndexOf('/'));
+				zips.add(finalPath.substring(1)); //To account for the "/" in file paths
+			}
+		}
+
+		return zips;
+	}
+
+	Future<Directory> get loadPath async {
+		var saveDir = await getApplicationDocumentsDirectory();
+
+		return saveDir;
 	}
 
 	void onLoading(BuildContext context, String zipName) async {
 		this.imageHandler = ImageHandler(zipName: zipName);
+
 		showDialog(
 			context: context,
 			barrierDismissible: false,
@@ -67,7 +104,11 @@ class _LandingPageState extends State<LandingPage> {
 			}
 		);
 
-		await this.imageHandler.downloadImages();
+		if (!zipName.endsWith('.zip')) {
+			await this.imageHandler.loadFromAppDocs();
+		} else {
+			await this.imageHandler.downloadImages();
+		}
 
 		var json = this.imageHandler.getJson();
 
@@ -80,6 +121,10 @@ class _LandingPageState extends State<LandingPage> {
 			)
 		);
 	}
+	
+	String capitalize(String zip) {
+		return zip[0].toUpperCase() + zip.substring(1);
+	}
 
 	@override
 	Widget build(BuildContext context) {
@@ -91,6 +136,7 @@ class _LandingPageState extends State<LandingPage> {
 					future: zips,
 					builder: (context, snapshot) {
 						if (snapshot.hasData) {
+							print(snapshot);
 							return Center(
 								child: SingleChildScrollView(
 										child: Column(
@@ -103,9 +149,9 @@ class _LandingPageState extends State<LandingPage> {
 													child: ListView.builder(
 														shrinkWrap: true,
 															itemBuilder: (BuildContext context, int index) {
-																return ExpansionTile(
-																		title: Text(snapshot.data[index].substring(0, snapshot.data[index].lastIndexOf('.zip'))[0].toUpperCase() +
-																				snapshot.data[index].substring(0, snapshot.data[index].lastIndexOf('.zip')).substring(1)),
+															print(index);
+															return ExpansionTile(
+																		title: Text(capitalize(snapshot.data[index].substring(0,snapshot.data[index].lastIndexOf('.zip')))),
 																		children: <Widget>[
 																			RaisedButton(
 																					child: Text(

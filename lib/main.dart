@@ -45,17 +45,10 @@ class countDown extends StatelessWidget {
 	@override
   Widget build(BuildContext context) {
     return Container(
-	    child: Positioned(
-		    top: 15,
-		    right: MediaQuery
-				    .of(context)
-				    .size
-				    .width / 2,
 		    child: Text(
 				    '$_current',
 				    style: (_current > 5) ? TextStyle(color: Colors.black) : TextStyle(color: Colors.red)
 		    ),
-	    )
     );
   }
 }
