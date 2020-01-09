@@ -1,19 +1,7 @@
 # quiqui
 
-Who is Who for CCExtractor
+The "Simple" Who is Who app for CCExtractor Development.
 
-## Getting Started
+A lot of the code from the previous version of this app has been split up to make the app more modular.
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
-# quiqui
-
-Thanks so much for taking a look at my epic dog app!
+Setting up the countdown timer and "packetization" (the ability for others to change the questions and answers by uploading to my [quiqui_imgs](https://www.github.com/dhrumilp15/quiqui_imgs) repo) was easily the two most difficult aspects of building the newer version of this app.
