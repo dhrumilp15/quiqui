@@ -26,7 +26,7 @@ class countdownTimerState extends State<countdownTimer> with TickerProviderState
 		);
 		controller.addStatusListener((status) {
 			if (status == AnimationStatus.completed) {
-				print("Animation Finished");
+//				print("Animation Finished");
 				widget.onFinish();
 			}
 		});
@@ -36,12 +36,6 @@ class countdownTimerState extends State<countdownTimer> with TickerProviderState
 
 	@override
 	void dispose() {
-		controller.removeStatusListener((status) {
-			if (status == AnimationStatus.completed) {
-				print("Animation Finished");
-				widget.onFinish();
-			}
-		});
 		controller.dispose();
 		super.dispose();
 	}

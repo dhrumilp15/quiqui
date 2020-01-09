@@ -48,7 +48,7 @@ class _MyHomePageState extends State<MyHomePage> {
 	}
 
 	void initQuiz() async {
-		print('widget.imageJson: ${widget.imageJson}');
+//		print('widget.imageJson: ${widget.imageJson}');
 
 		quiz = Quiz(widget.imageJson);
 
@@ -60,8 +60,8 @@ class _MyHomePageState extends State<MyHomePage> {
 	}
 
 	void check(BuildContext context, Dog userAnswer) {
-		print("userAnswer.map: " + userAnswer?.map.toString());
-		print("quiz.getDog(quiz.dogIndex).map" + quiz.getDog(quiz.dogIndex).map.toString());
+//		print("userAnswer.map: " + userAnswer?.map.toString());
+//		print("quiz.getDog(quiz.dogIndex).map" + quiz.getDog(quiz.dogIndex).map.toString());
 		if (userAnswer == null) {
 			dontKnow(context);
 		}
@@ -82,13 +82,12 @@ class _MyHomePageState extends State<MyHomePage> {
 			waiting = true;
 //			Scaffold.of(context).showSnackBar(SnackBar(content: Text('Oh noes! That\'s ok!')));
 			timerKey.currentState.stop();
-			print("unlucky - that's wrong");
+//			print("unlucky - that's wrong");
 			if (cardKey.currentState.isForward) cardKey.currentState.flipCard();
 
 			Future.delayed(Duration(seconds: 2), () {
 				cardKey.currentState.flipCard();
-				if (cardKey.currentState.isForward) quiz.incorrect();
-				print("Tried to start timer");
+				if (cardKey.currentState.isForward) Future.delayed(Duration(milliseconds: 250), () => quiz.incorrect());
 				timerKey.currentState.reset();
 				timerKey.currentState.start();
 				waiting = false;

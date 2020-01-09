@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
+import 'dart:io';
 
 class ImageView extends StatelessWidget {
 	final String file;
 	final double dimension = 305.0;
-	ImageView(this.file);
+	Image image;
+
+	ImageView(this.file) {
+		image = Image.file(File(file),height: dimension, width: dimension);
+	}
 
 	@override
 	Widget build(BuildContext context) {
@@ -22,7 +27,7 @@ class ImageView extends StatelessWidget {
 												width: 5.0
 										),
 										image: DecorationImage(
-											image: ExactAssetImage(file),
+											image: FileImage(File(file)),
 											fit: BoxFit.fill,
 										)
 								),
