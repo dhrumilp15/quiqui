@@ -1,6 +1,8 @@
+import "dart:io";
+import "package:path_provider/path_provider.dart";
 
 class Dog {
-	// The name and file fields are required so that the app doesn't break
+	// The name and file fields are required as the most basic amount of information about the images
 	String name;
 	String file;
 	Map<String, dynamic> details = new Map<String, dynamic>(); // any other information
@@ -21,7 +23,7 @@ class Dog {
 		return Dog(
 			name: json['name'] as String,
 			file: json['filepath'] as String,
-			details: details as Map<String, dynamic>,
+			details: details,
 		);
 	}
 
@@ -30,7 +32,7 @@ class Dog {
 	}
 
 	String get getFile {
-		return this.file;
+		return file;
 	}
 
 	void setName(String name) {

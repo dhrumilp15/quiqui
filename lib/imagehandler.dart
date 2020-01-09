@@ -1,27 +1,169 @@
-import 'package:quiqui/Dog.dart';
+import 'dart:convert';
+import 'package:path_provider/path_provider.dart';
+import 'dart:io';
+import 'package:dio/dio.dart';
+import 'package:http/http.dart' as http;
+import 'package:archive/archive_io.dart';
+import 'package:archive/archive.dart';
+import 'dart:async';
 
 class ImageHandler {
-	ImageHandler() {
-		loadImages();
+	Map<String, dynamic> json;
+
+	final String urlPath;
+	final String zipName;
+	String regularName;
+
+	bool downloading = false;
+	String progress;
+
+
+	ImageHandler({this.urlPath = "https://api.github.com/repos/dhrumilp15/quiqui_imgs/contents/", this.zipName}) {
+		if (urlPath == null) {
+			this.json = jsonDefault;
+		}
 	}
 
-	void loadImages() {
-		//packetization
+	Future<String> get loadPath async {
+		Directory saveDir = null;
+
+		saveDir = await getApplicationDocumentsDirectory();
+
+		return saveDir.path;
+	}
+
+	Future<void> _createDirectory(path) async {
+		final Directory directory = await Directory('$path/CapturedImages').create(recursive: true);
+		print("The directory $directory is created");
+	}
+
+	void listD(Directory dir) async {
+		Stream<FileSystemEntity> entityList = dir.list(recursive: true, followLinks: false);
+		await for (FileSystemEntity entity in entityList) print(entity.path);
+	}
+
+	Future<void> loadFromAppDocs() async {
+		final path = await loadPath;
+
+		this.json = await parseJson(File("$path/${this.zipName}/images.json"));
+		this.json[zipName].forEach((dog) => {
+			dog["filepath"] = "$path/$zipName/${dog["filepath"]}"
+		});
+	}
+
+	Future<void> downloadImages() async {
+		final path = await loadPath;
+		print('path: $path');
+
+		Map<String, dynamic> downloadJson = await _fetchDownloadUrl(this.urlPath, this.zipName);
+
+		String downloadUrl = downloadJson["download_url"];
+
+		String name = downloadJson["name"];
+
+		await _download(downloadUrl, path, name);
+
+		await unzip(path, name);
+
+		print("ALL DONE DOWNLOADING");
+		return;
+	}
+
+	Future<Map<String, dynamic>> _fetchDownloadUrl(String url, String name) async {
+		final response = await http.get(url);
+
+		if (response.statusCode == 200) {
+			List<dynamic> githubJson = jsonDecode(response.body);
+
+			Map<String, dynamic> specificJson = _findJson(githubJson, name);
+			return specificJson;
+		} else {
+			throw Exception("UNLUCKY - Github call for Download URL failed!");
+		}
+	}
+
+
+	Future<void> _download(String githubUrl, String saveDirPath, String nameOfZip) async {
+		Dio dio = new Dio();
+		print("downlaodUrl: $githubUrl");
+		print("saveDirPath: $saveDirPath");
+
+
+		await dio.download(githubUrl, "$saveDirPath/$nameOfZip",
+		onReceiveProgress: (rec, total) {
+			print("downloading");
+			downloading = true;
+			progress = ((rec / total) * 100).toStringAsFixed(0) + "%";
+		});
+
+		return;
+	}
+
+	Future<void> unzip(String path, String zipName) async {
+		print("ENTERED THE UNZIP");
+		final bytes = File("$path/$zipName").readAsBytesSync();
+		
+		String saveDirName = "$path/${zipName.substring(0, zipName.lastIndexOf('.zip'))}"; // Ex - dogs.zip, this will produce a dog/ folder for all the images
+//		String saveDirName = path;
+		// Decode the Zip file
+		final archive = ZipDecoder().decodeBytes(bytes);
+
+
+		// Extract the contents of the Zip archive to disk.
+		for (final file in archive) {
+			final filename = file.name;
+			print('filename: $filename');
+			if (file.isFile) {
+					final data = file.content as List<int>;
+					print('Saved Location: $saveDirName/$filename');
+					File('$saveDirName/' + filename)
+						..createSync(recursive: true)
+						..writeAsBytesSync(data);
+
+					if (file.name == "images.json") {
+						this.json = await parseJson(File('$saveDirName/' + filename));
+						this.json[zipName.substring(0, zipName.lastIndexOf('.zip'))].forEach((dog) => {
+							dog["filepath"] = "$path/${zipName.substring(0, zipName.lastIndexOf('.zip'))}/${dog["filepath"]}"
+						});
+					}
+			} else {
+				Directory('$saveDirName/' + filename)
+					..create(recursive: true);
+			}
+		}
+		return;
+	}
+
+	Future<Map<String, dynamic>> parseJson(File file) async {
+		String contents = await file.readAsString();
+
+		return jsonDecode(contents)[0] as Map<String, dynamic>;
+	}
+
+	Map<String, dynamic> _findJson(List<dynamic> githubJson, String name) {
+		for (int i = 0; i < githubJson.length; i++) {
+			Map<String, dynamic> json = githubJson[i];
+			if (json["name"] == name) {
+				return json;
+			}
+		}
+
+		throw Exception("That doesn\'t exist!");
 	}
 
 	Map<String, dynamic> getJson() {
 		return this.json;
 	}
 
-	List<Dog> jsonHandler(key) {
-		return json[key].map<Dog>((dogJson) => Dog.fromJson(dogJson)).toList();
-	}
-
 	List<String> getInfo() {
 		return json['info'];
 	}
 
-	final Map<String, dynamic> json =
+	Map<String, dynamic> get defaultJson {
+		return this.jsonDefault;
+	}
+
+	final Map<String, dynamic> jsonDefault =
 	{
 		"info" : ["name", "owner", "origin"],
 		"dogs" : [

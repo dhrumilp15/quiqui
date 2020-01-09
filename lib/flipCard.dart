@@ -92,13 +92,6 @@ class FlipCardState extends State<FlipCard> with SingleTickerProviderStateMixin{
 			],
 		).animate(_animationController);
 
-//		_animationController.addStatusListener((status) {
-//			if (status == AnimationStatus.completed || status == AnimationStatus.dismissed) {
-//				if (widget.front != null) {
-//					widget.onFlipDone(isForward);
-//				}
-//			}
-//		});
 	}
 
 	void flipCard() {
