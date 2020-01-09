@@ -32,6 +32,7 @@ class _MyHomePageState extends State<MyHomePage> {
 	Quiz quiz;
 	GlobalKey<FlipCardState> cardKey = GlobalKey<FlipCardState>();
 	GlobalKey<countdownTimerState> timerKey = GlobalKey<countdownTimerState>();
+	final GlobalKey formKey = GlobalKey<FormState>();
 	bool waiting = false;
 
 
@@ -61,15 +62,18 @@ class _MyHomePageState extends State<MyHomePage> {
 	void check(BuildContext context, Dog userAnswer) {
 		print("userAnswer.map: " + userAnswer?.map.toString());
 		print("quiz.getDog(quiz.dogIndex).map" + quiz.getDog(quiz.dogIndex).map.toString());
-
-		if (DeepCollectionEquality().equals(userAnswer?.map, quiz.getDog(quiz.dogIndex).map)) { // because identical() did not work
-			Scaffold.of(context)
-					.showSnackBar(SnackBar(content: Text('Nice!')));
+		if (userAnswer == null) {
+			dontKnow(context);
+		}
+		else if (DeepCollectionEquality().equals(userAnswer?.map, quiz.getDog(quiz.dogIndex).map)) { // because identical() did not work
+//			Scaffold.of(context)
+//					.showSnackBar(SnackBar(content: Text('Nice!')));
+			FormState form = formKey.currentState;
+			form.reset();
 			quiz.correct();
+			FocusScope.of(context).unfocus();
 			timerKey.currentState.reset();
 			timerKey.currentState.start();
-		} else {
-			dontKnow(context);
 		}
 	}
 
@@ -77,6 +81,7 @@ class _MyHomePageState extends State<MyHomePage> {
 		if (!waiting) {
 			waiting = true;
 //			Scaffold.of(context).showSnackBar(SnackBar(content: Text('Oh noes! That\'s ok!')));
+			timerKey.currentState.stop();
 			print("unlucky - that's wrong");
 			if (cardKey.currentState.isForward) cardKey.currentState.flipCard();
 
@@ -93,6 +98,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
 	@override
 	Widget build(BuildContext context) {
+//		print('waiting: $waiting');
 		return Scaffold(
 				appBar: AppBar(
 					title: Text('Qui Qui'),
@@ -130,6 +136,7 @@ class _MyHomePageState extends State<MyHomePage> {
 											Divider(), // this is fine.
 											(quiz.dogs.length > 0) ?
 											userInput(
+													formKey: formKey,
 													quiz: quiz,
 													info: widget.imageJson["info"],
 													onSubmit: (Dog userAnswer) => check(context, userAnswer)

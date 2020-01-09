@@ -12,15 +12,15 @@ class userInput extends StatefulWidget {
 	final List info;
 	final Quiz quiz;
 	final onSubmitCallback onSubmit;
+	final GlobalKey formKey;
 
-	userInput({this.quiz, this.info, this.onSubmit});
+	userInput({this.formKey, this.quiz, this.info, this.onSubmit});
 
 	@override
   _userInputState createState() => _userInputState();
 }
 
 class _userInputState extends State<userInput> {
-	final GlobalKey _formKey = GlobalKey<FormState>();
 
 	Dog _userAnswer = Dog(name: '', file: '', details: {});
 
@@ -38,7 +38,7 @@ class _userInputState extends State<userInput> {
   Widget build(BuildContext context) {
   	var rows = buildListOfRows();
 		  return Form(
-						key: _formKey,
+						key: widget.formKey,
 						child: SingleChildScrollView(
 								child: Column(
 								mainAxisAlignment: MainAxisAlignment.center,
@@ -54,12 +54,11 @@ class _userInputState extends State<userInput> {
 															// Validate returns true if the form is valid, or false
 															// otherwise.
 															// If the form is valid, display a Snackbar.
-															FormState form = _formKey.currentState;
+															FormState form = widget.formKey.currentState;
 
 															if (form.validate()) {
 																form.save();
 																widget.onSubmit(_userAnswer);
-																form.reset();
 															}
 														},
 														color: Colors.blue,
@@ -74,7 +73,7 @@ class _userInputState extends State<userInput> {
 													child: RaisedButton(
 														onPressed: () {
 															widget.onSubmit(null);
-															FormState form = _formKey.currentState;
+															FormState form = widget.formKey.currentState;
 															form.reset();
 														},
 														color: Colors.cyan,
