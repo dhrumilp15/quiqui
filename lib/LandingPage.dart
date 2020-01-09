@@ -50,17 +50,12 @@ class _LandingPageState extends State<LandingPage> {
 		}
 
 		List<String> existingZip = await existingZips();
-		print('existingZip: $existingZip');
-
-		print(zips);
 
 		existingZip.forEach((zipName) {
-			print(zips);
 			if (zips.contains("$zipName.zip")) {
 				zips[zips.indexOf("$zipName.zip")] = zipName;
 			}
 		});
-		print(zips);
 
 		return zips;
 	}
@@ -142,7 +137,7 @@ class _LandingPageState extends State<LandingPage> {
 					future: zips,
 					builder: (context, snapshot) {
 						if (snapshot.hasData) {
-							print(snapshot);
+//							print(snapshot);
 							return Center(
 								child: SingleChildScrollView(
 										child: Column(
@@ -155,7 +150,7 @@ class _LandingPageState extends State<LandingPage> {
 													child: ListView.builder(
 														shrinkWrap: true,
 															itemBuilder: (BuildContext context, int index) {
-															print(index);
+//															print(index);
 															return ExpansionTile(
 																		title: Text(capitalize(snapshot.data[index])),
 																		children: <Widget>[

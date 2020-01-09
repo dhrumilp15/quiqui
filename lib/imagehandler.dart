@@ -28,13 +28,8 @@ class ImageHandler {
 		Directory saveDir = null;
 
 		saveDir = await getApplicationDocumentsDirectory();
-
+		print('saveDir.path: ${saveDir.path}');
 		return saveDir.path;
-	}
-
-	Future<void> _createDirectory(path) async {
-		final Directory directory = await Directory('$path/CapturedImages').create(recursive: true);
-		print("The directory $directory is created");
 	}
 
 	void listD(Directory dir) async {
@@ -44,6 +39,7 @@ class ImageHandler {
 
 	Future<void> loadFromAppDocs() async {
 		final path = await loadPath;
+		listD(Directory(path));
 
 		this.json = await parseJson(File("$path/${this.zipName}/images.json"));
 		this.json[zipName].forEach((dog) => {
@@ -53,7 +49,7 @@ class ImageHandler {
 
 	Future<void> downloadImages() async {
 		final path = await loadPath;
-		print('path: $path');
+//		print('path: $path');
 
 		Map<String, dynamic> downloadJson = await _fetchDownloadUrl(this.urlPath, this.zipName);
 
@@ -85,13 +81,10 @@ class ImageHandler {
 
 	Future<void> _download(String githubUrl, String saveDirPath, String nameOfZip) async {
 		Dio dio = new Dio();
-		print("downlaodUrl: $githubUrl");
-		print("saveDirPath: $saveDirPath");
-
 
 		await dio.download(githubUrl, "$saveDirPath/$nameOfZip",
 		onReceiveProgress: (rec, total) {
-			print("downloading");
+//			print("downloading");
 			downloading = true;
 			progress = ((rec / total) * 100).toStringAsFixed(0) + "%";
 		});
@@ -100,7 +93,6 @@ class ImageHandler {
 	}
 
 	Future<void> unzip(String path, String zipName) async {
-		print("ENTERED THE UNZIP");
 		final bytes = File("$path/$zipName").readAsBytesSync();
 		
 		String saveDirName = "$path/${zipName.substring(0, zipName.lastIndexOf('.zip'))}"; // Ex - dogs.zip, this will produce a dog/ folder for all the images
@@ -112,11 +104,11 @@ class ImageHandler {
 		// Extract the contents of the Zip archive to disk.
 		for (final file in archive) {
 			final filename = file.name;
-			print('filename: $filename');
+//			print('filename: $filename');
 			if (file.isFile) {
 					final data = file.content as List<int>;
-					print('Saved Location: $saveDirName/$filename');
-					File('$saveDirName/' + filename)
+//					print('Saved Location: $saveDirName/$filename');
+					File('$saveDirName/flutter_assets/' + filename)
 						..createSync(recursive: true)
 						..writeAsBytesSync(data);
 
@@ -127,7 +119,7 @@ class ImageHandler {
 						});
 					}
 			} else {
-				Directory('$saveDirName/' + filename)
+				Directory('$saveDirName/flutter_assets/' + filename)
 					..create(recursive: true);
 			}
 		}
