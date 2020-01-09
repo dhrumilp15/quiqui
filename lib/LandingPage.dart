@@ -50,14 +50,14 @@ class _LandingPageState extends State<LandingPage> {
 		}
 
 		List<String> existingZip = await existingZips();
-		print(existingZip);
+		print('existingZip: $existingZip');
 
 		print(zips);
 
 		existingZip.forEach((zipName) {
 			print(zips);
-			if (!zips.contains("$zipName.zip")) {
-				zips.add(zipName);
+			if (zips.contains("$zipName.zip")) {
+				zips[zips.indexOf("$zipName.zip")] = zipName;
 			}
 		});
 		print(zips);
@@ -71,8 +71,8 @@ class _LandingPageState extends State<LandingPage> {
 		Stream<FileSystemEntity> entityList = (await loadPath).list(recursive: false, followLinks: false);
 		await for (FileSystemEntity entity in entityList) {
 			if (entity is Directory && entity.path.substring(entity.path.lastIndexOf('/')) != "/flutter_assets") {
-				var finalPath = entity.path.substring(entity.path.lastIndexOf('/'));
-				zips.add(finalPath.substring(1)); //To account for the "/" in file paths
+				var finalPath = entity.path.substring(entity.path.lastIndexOf('/') + 1);  //To account for the "/" in file paths
+				zips.add(finalPath);
 			}
 		}
 
@@ -97,7 +97,7 @@ class _LandingPageState extends State<LandingPage> {
 						mainAxisSize: MainAxisSize.min,
 						children: <Widget>[
 							CircularProgressIndicator(),
-							Text("Downloading Package...")
+							Text("Loading Package...")
 						]
 					)
 				);
@@ -123,7 +123,13 @@ class _LandingPageState extends State<LandingPage> {
 	}
 	
 	String capitalize(String zip) {
-		return zip[0].toUpperCase() + zip.substring(1);
+		var finalZip = zip[0].toUpperCase();
+		if (zip.contains('.zip')) {
+			finalZip += zip.substring(1, zip.lastIndexOf('.zip'));
+		} else {
+			finalZip += zip.substring(1);
+		}
+		return finalZip;
 	}
 
 	@override
@@ -151,7 +157,7 @@ class _LandingPageState extends State<LandingPage> {
 															itemBuilder: (BuildContext context, int index) {
 															print(index);
 															return ExpansionTile(
-																		title: Text(capitalize(snapshot.data[index].substring(0,snapshot.data[index].lastIndexOf('.zip')))),
+																		title: Text(capitalize(snapshot.data[index])),
 																		children: <Widget>[
 																			RaisedButton(
 																					child: Text(

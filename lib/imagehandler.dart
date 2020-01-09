@@ -44,7 +44,11 @@ class ImageHandler {
 
 	Future<void> loadFromAppDocs() async {
 		final path = await loadPath;
+
 		this.json = await parseJson(File("$path/${this.zipName}/images.json"));
+		this.json[zipName].forEach((dog) => {
+			dog["filepath"] = "$path/$zipName/${dog["filepath"]}"
+		});
 	}
 
 	Future<void> downloadImages() async {

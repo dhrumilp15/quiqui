@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
 import 'dart:core';
 
-import 'package:quiqui/imagehandler.dart';
+import 'package:quiqui/countdownTimer.dart';
 import 'package:quiqui/Dog.dart';
+import 'package:quiqui/quiz.dart';
+import 'package:quiqui/flipCard.dart';
 
 typedef onSubmitCallback = void Function(Dog userAnswer);
 
 class userInput extends StatefulWidget {
-	final onSubmitCallback onSubmit;
 	final List info;
+	final Quiz quiz;
+	final onSubmitCallback onSubmit;
 
-	userInput({this.onSubmit, this.info});
+	userInput({this.quiz, this.info, this.onSubmit});
 
 	@override
   _userInputState createState() => _userInputState();
@@ -57,8 +60,6 @@ class _userInputState extends State<userInput> {
 																form.save();
 																widget.onSubmit(_userAnswer);
 																form.reset();
-																Scaffold.of(context)
-																		.showSnackBar(SnackBar(content: Text('Processing Data')));
 															}
 														},
 														color: Colors.blue,
@@ -75,19 +76,6 @@ class _userInputState extends State<userInput> {
 															widget.onSubmit(null);
 															FormState form = _formKey.currentState;
 															form.reset();
-															Scaffold.of(context)
-																	.showSnackBar(
-																		SnackBar(
-																				content: Text('Oh noes! That\'s ok!'),
-																			action: SnackBarAction(
-																				label: 'Dismiss',
-																				textColor: Colors.yellow,
-																				onPressed: () {
-																					Scaffold.of(context).hideCurrentSnackBar();
-																				}
-																			)
-																		)
-																);
 														},
 														color: Colors.cyan,
 														child: Text(
@@ -180,6 +168,5 @@ class _userInputState extends State<userInput> {
   String getLabelText(int index) {
   	return widget.info[index][0].toUpperCase() + widget.info[index].substring(1);
   }
-
 
 }

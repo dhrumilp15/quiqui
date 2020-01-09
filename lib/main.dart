@@ -37,22 +37,6 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class countDown extends StatelessWidget {
-  int _current;
-
-  countDown(this._current);
-
-	@override
-  Widget build(BuildContext context) {
-    return Container(
-		    child: Text(
-				    '$_current',
-				    style: (_current > 5) ? TextStyle(color: Colors.black) : TextStyle(color: Colors.red)
-		    ),
-    );
-  }
-}
-
 class RouteArgs {
 	final Map<String, dynamic> json;
 

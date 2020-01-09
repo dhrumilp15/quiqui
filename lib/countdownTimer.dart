@@ -2,13 +2,20 @@ import 'package:flutter/material.dart';
 import 'dart:math';
 
 class countdownTimer extends StatefulWidget {
-  @override
-  _countdownTimerState createState() => _countdownTimerState();
+	final VoidCallback onFinish;
+	countdownTimer({
+		Key key,
+		this.onFinish
+	}) : super(key: key);
+
+	@override
+  countdownTimerState createState() => countdownTimerState();
 }
 
-class _countdownTimerState extends State<countdownTimer> with TickerProviderStateMixin{
+class countdownTimerState extends State<countdownTimer> with TickerProviderStateMixin{
 	AnimationController controller;
-	final int totalTime = 30;
+	final int totalTime = 20;
+	AnimationStatus status;
 
 	@override
 	void initState() {
@@ -17,30 +24,103 @@ class _countdownTimerState extends State<countdownTimer> with TickerProviderStat
 			vsync: this,
 			duration: Duration(seconds: totalTime),
 		);
+		controller.addStatusListener((status) {
+			if (status == AnimationStatus.completed) {
+				print("Animation Finished");
+				widget.onFinish();
+			}
+		});
+
+		controller.forward();
+	}
+
+	@override
+	void dispose() {
+		controller.removeStatusListener((status) {
+			if (status == AnimationStatus.completed) {
+				print("Animation Finished");
+				widget.onFinish();
+			}
+		});
+		controller.dispose();
+		super.dispose();
+	}
+
+	void start() {
+		controller.forward();
+	}
+
+	void stop() {
+		controller.stop();
+	}
+
+	void reset() {
+		controller.reset();
+	}
+
+	String get timerString {
+		Duration duration =
+				controller.duration * controller.value;
+		return '${totalTime - duration.inSeconds}';
 	}
 
 	@override
   Widget build(BuildContext context) {
-		ThemeData themeData = Theme.of(context);
 		return Container(
-					child: Stack(
-						children: <Widget>[
-							Positioned.fill(
-									child: AnimatedBuilder(
-											animation: controller,
-											builder: (BuildContext context, Widget child) {
-												return CustomPaint(
-													painter: CustomTimerPainter(
-															animation: controller,
-															backgroundColour: Colors.white,
-															colour: themeData.indicatorColor
-													),
-												);
-											}
-											)
+				child: Column(
+					mainAxisAlignment: MainAxisAlignment.center,
+					mainAxisSize: MainAxisSize.min,
+					children: <Widget>[
+						Flexible(
+							fit: FlexFit.loose,
+							child: Align(
+								alignment: FractionalOffset.center,
+								child: ConstrainedBox(
+									constraints: BoxConstraints(maxHeight: 40.0),
+										child: AspectRatio(
+												aspectRatio: 1.0,
+												child: Stack(
+														children: <Widget>[
+															Positioned.fill(
+																child: AnimatedBuilder(
+																	animation: controller,
+																	builder:
+																			(BuildContext context, Widget child) {
+																		return CustomPaint(
+																				painter: CustomTimerPainter(
+																					animation: controller,
+																					backgroundColour: Colors.red,
+																					colour: Colors.black,
+																				));
+																	},
+																),
+															),
+															Align(
+																alignment: FractionalOffset.center,
+																child: Column(
+																	mainAxisAlignment: MainAxisAlignment.center,
+																	crossAxisAlignment: CrossAxisAlignment.center,
+																	children: <Widget>[
+																		AnimatedBuilder(
+																			animation: controller,
+																			builder: (context, child) {
+																				return Text(
+																					timerString,
+																				);
+																			}
+																		)
+																	],
+																)
+															)
+														]
+												)
+										)
+								)
+
 							)
-						],
-					)
+						)
+					],
+				)
 		);
   }
 }
@@ -60,7 +140,7 @@ class CustomTimerPainter extends CustomPainter {
 	void paint(Canvas canvas, Size size) {
 		Paint paint = Paint()
 			..color = backgroundColour
-			..strokeWidth = 10.0
+			..strokeWidth = 2.0
 			..strokeCap = StrokeCap.butt
 			..style = PaintingStyle.stroke;
 

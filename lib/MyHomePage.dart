@@ -13,7 +13,7 @@ import 'package:quiqui/ImageView.dart';
 import 'package:quiqui/userInput.dart';
 import 'package:quiqui/Dog.dart';
 import 'package:quiqui/finalPage.dart';
-import 'package:quiqui/main.dart';
+import 'package:quiqui/LandingPage.dart';
 import 'package:quiqui/countdownTimer.dart';
 
 class MyHomePage extends StatefulWidget {
@@ -30,11 +30,10 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
 	Quiz quiz;
-	static final int totalTime = 20;
-	int _start = totalTime;
-	int _current = totalTime;
-	var sub;
 	GlobalKey<FlipCardState> cardKey = GlobalKey<FlipCardState>();
+	GlobalKey<countdownTimerState> timerKey = GlobalKey<countdownTimerState>();
+	bool waiting = false;
+
 
 	@override
 	void initState() {
@@ -53,67 +52,43 @@ class _MyHomePageState extends State<MyHomePage> {
 		quiz = Quiz(widget.imageJson);
 
 		Timer.periodic(Duration(milliseconds: 20), onTick); // Update the app every 20 ms
-
-		this.sub?.cancel();
-
-		initTimer();
-		startTimer();
 	}
 
 	void onTick(Timer timer) {
 		setState(() {});
 	}
 
-	void initTimer() {
-		_start = totalTime;
-		_current = totalTime;
-	}
-
-	void startTimer() {
-		CountdownTimer countDownTimer = new CountdownTimer(
-			new Duration(seconds: _start),
-			new Duration(seconds: 1),
-		);
-
-		this.sub = countDownTimer.listen(null);
-		sub.onData((duration) {
-			setState(() { _current = _start - duration.elapsed.inSeconds; });
-		});
-
-		sub.onDone(() {
-			dontKnow();
-			sub.cancel();
-		});
-	}
-
-	void check(Dog userAnswer) {
+	void check(BuildContext context, Dog userAnswer) {
 		print("userAnswer.map: " + userAnswer?.map.toString());
 		print("quiz.getDog(quiz.dogIndex).map" + quiz.getDog(quiz.dogIndex).map.toString());
 
-
 		if (DeepCollectionEquality().equals(userAnswer?.map, quiz.getDog(quiz.dogIndex).map)) { // because identical() did not work
-			print('THAT WAS RIGHT');
-			this.sub.cancel();
-			initTimer();
+			Scaffold.of(context)
+					.showSnackBar(SnackBar(content: Text('Nice!')));
 			quiz.correct();
-			startTimer();
+			timerKey.currentState.reset();
+			timerKey.currentState.start();
 		} else {
-			dontKnow();
+			dontKnow(context);
 		}
 	}
 
-	void dontKnow() {
-		print("unlucky - that's wrong");
-		this.sub.cancel();
-		cardKey.currentState.flipCard();
-//		Scaffold.of(context)
-//				.showSnackBar(SnackBar(content: Text('Oh noes!')));
-		Future.delayed(Duration(seconds: 5), () {
-			cardKey.currentState.flipCard();
-			initTimer();
-			if (cardKey.currentState.isForward) quiz.incorrect();
-			startTimer();
-		}); // Give the player 5 seconds to realize their mistake
+	void dontKnow(BuildContext context) {
+		if (!waiting) {
+			waiting = true;
+//			Scaffold.of(context).showSnackBar(SnackBar(content: Text('Oh noes! That\'s ok!')));
+			print("unlucky - that's wrong");
+			if (cardKey.currentState.isForward) cardKey.currentState.flipCard();
+
+			Future.delayed(Duration(seconds: 2), () {
+				cardKey.currentState.flipCard();
+				if (cardKey.currentState.isForward) quiz.incorrect();
+				print("Tried to start timer");
+				timerKey.currentState.reset();
+				timerKey.currentState.start();
+				waiting = false;
+			}); // Give the player 5 seconds to realize their mistake
+		}
 	}
 
 	@override
@@ -130,10 +105,18 @@ class _MyHomePageState extends State<MyHomePage> {
 											Stack(
 													children: <Widget>[
 														(quiz.dogs.length > 0) ?
-														Positioned(
-															top: 15,
-															right: MediaQuery.of(context).size.width/2,
-															child: countDown(this._current)
+														Padding(
+															padding: EdgeInsets.only(top: 5.0),
+															child: Row(
+																	mainAxisAlignment: MainAxisAlignment.center,
+																	children: <Widget>[
+//																		countdown(this._current)
+																		countdownTimer(
+																			key: timerKey,
+																			onFinish: () => dontKnow(context),
+																		)
+																	]
+															)
 														) : Container(height:0),
 														(quiz.dogs.length > 0) ?
 														FlipCard(
@@ -147,8 +130,9 @@ class _MyHomePageState extends State<MyHomePage> {
 											Divider(), // this is fine.
 											(quiz.dogs.length > 0) ?
 											userInput(
-													onSubmit: (Dog userAnswer) => check(userAnswer),
-													info: widget.imageJson["info"]
+													quiz: quiz,
+													info: widget.imageJson["info"],
+													onSubmit: (Dog userAnswer) => check(context, userAnswer)
 											) :
 											finalPage(
 													quiz: quiz,
