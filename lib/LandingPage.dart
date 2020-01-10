@@ -45,12 +45,13 @@ class _LandingPageState extends State<LandingPage> {
 					zips.add(json["name"]);
 				}
 			});
+			print('zips: $zips');
 		} else {
 			throw Exception("Oh No! - Github call for Download URL failed!");
 		}
 
-		List<String> existingZip = await existingZips();
-
+		List<String> existingZip = await existingZips(zips);
+		print(existingZip);
 		existingZip.forEach((zipName) {
 			if (zips.contains("$zipName.zip")) {
 				zips[zips.indexOf("$zipName.zip")] = zipName;
@@ -60,17 +61,17 @@ class _LandingPageState extends State<LandingPage> {
 		return zips;
 	}
 
-	Future<List<String>> existingZips() async {
+	Future<List<String>> existingZips(List<String> repoZips) async {
 		List<String> zips = new List<String>();
 
 		Stream<FileSystemEntity> entityList = (await loadPath).list(recursive: false, followLinks: false);
 		await for (FileSystemEntity entity in entityList) {
-			if (entity is Directory && entity.path.substring(entity.path.lastIndexOf('/')) != "/flutter_assets") {
+			print(entity.path);
+			if (entity is Directory && repoZips.contains("${entity.path.substring(entity.path.lastIndexOf("/") + 1)}.zip")) {
 				var finalPath = entity.path.substring(entity.path.lastIndexOf('/') + 1);  //To account for the "/" in file paths
 				zips.add(finalPath);
 			}
 		}
-
 		return zips;
 	}
 
@@ -82,6 +83,7 @@ class _LandingPageState extends State<LandingPage> {
 
 	void onLoading(BuildContext context, String zipName) async {
 		this.imageHandler = ImageHandler(zipName: zipName);
+		print('zipName: $zipName');
 
 		showDialog(
 			context: context,
@@ -137,43 +139,46 @@ class _LandingPageState extends State<LandingPage> {
 					future: zips,
 					builder: (context, snapshot) {
 						if (snapshot.hasData) {
-//							print(snapshot);
-							return Center(
-								child: SingleChildScrollView(
-										child: Column(
-											mainAxisAlignment: MainAxisAlignment.center,
-											mainAxisSize: MainAxisSize.min,
+							return Column(
+											mainAxisAlignment: MainAxisAlignment.start,
 											children: <Widget>[
-												Text("PEPSI MAN"),
-												Flexible(
-													fit: FlexFit.loose,
-													child: ListView.builder(
-														shrinkWrap: true,
-															itemBuilder: (BuildContext context, int index) {
-//															print(index);
-															return ExpansionTile(
-																		title: Text(capitalize(snapshot.data[index])),
-																		children: <Widget>[
-																			RaisedButton(
-																					child: Text(
-																							"Use this package?",
-																							style: TextStyle(color: Colors.white)
-																					),
-																					onPressed: () {
-																						onLoading(context, snapshot.data[index]);
-																					},
-																					color: Colors.blue
-																			)
-																		]
-																);
-															},
-															itemCount: snapshot.data.length
+												ConstrainedBox(
+													constraints: BoxConstraints(
+														maxHeight: MediaQuery.of(context).size.height/2
 													),
+													child: Column(
+														mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+														crossAxisAlignment: CrossAxisAlignment.center,
+														children: <Widget>[
+															Text("Welcome to Dhrumil's epic Who is Who app!"),
+															Text("Pick the package of questions and answers you'd like to test yourself with here!"),
+														]
+													)
+												),
+												Divider(),
+												ListView.builder(
+														shrinkWrap: true,
+														itemBuilder: (BuildContext context, int index) {
+															return ExpansionTile(
+																	title: Text(capitalize(snapshot.data[index])),
+																	children: <Widget>[
+																		RaisedButton(
+																				child: Text(
+																						"Use this package?",
+																						style: TextStyle(color: Colors.white)
+																				),
+																				onPressed: () {
+																					onLoading(context, snapshot.data[index]);
+																				},
+																				color: Colors.blue
+																		)
+																	]
+															);
+														},
+														itemCount: snapshot.data.length
 												)
 											]
-										),
-								)
-							);
+									);
 						} else if (snapshot.hasError) {
 							return Text("${snapshot.error}");
 						}

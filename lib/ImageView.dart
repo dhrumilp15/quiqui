@@ -4,11 +4,8 @@ import 'dart:io';
 class ImageView extends StatelessWidget {
 	final String file;
 	final double dimension = 305.0;
-	Image image;
 
-	ImageView(this.file) {
-		image = Image.file(File(file),height: dimension, width: dimension);
-	}
+	ImageView(this.file);
 
 	@override
 	Widget build(BuildContext context) {
@@ -27,7 +24,7 @@ class ImageView extends StatelessWidget {
 												width: 5.0
 										),
 										image: DecorationImage(
-											image: FileImage(File(file)),
+											image: (file.startsWith('lib')) ? AssetImage(file) : FileImage(File(file)),
 											fit: BoxFit.fill,
 										)
 								),

@@ -40,6 +40,7 @@ class ImageHandler {
 	Future<void> loadFromAppDocs() async {
 		final path = await loadPath;
 		listD(Directory(path));
+		print("Originated from loadFromAppDocs");
 
 		this.json = await parseJson(File("$path/${this.zipName}/images.json"));
 		this.json[zipName].forEach((dog) => {
@@ -108,7 +109,7 @@ class ImageHandler {
 			if (file.isFile) {
 					final data = file.content as List<int>;
 //					print('Saved Location: $saveDirName/$filename');
-					File('$saveDirName/flutter_assets/' + filename)
+					File('$saveDirName/' + filename)
 						..createSync(recursive: true)
 						..writeAsBytesSync(data);
 
@@ -119,7 +120,7 @@ class ImageHandler {
 						});
 					}
 			} else {
-				Directory('$saveDirName/flutter_assets/' + filename)
+				Directory('$saveDirName/' + filename)
 					..create(recursive: true);
 			}
 		}
@@ -153,6 +154,10 @@ class ImageHandler {
 
 	Map<String, dynamic> get defaultJson {
 		return this.jsonDefault;
+	}
+
+	String get defaultImage {
+		return json[json.keys.toList()[1]];
 	}
 
 	final Map<String, dynamic> jsonDefault =
