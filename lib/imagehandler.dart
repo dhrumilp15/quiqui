@@ -156,10 +156,6 @@ class ImageHandler {
 		return this.jsonDefault;
 	}
 
-	String get defaultImage {
-		return json[json.keys.toList()[1]];
-	}
-
 	final Map<String, dynamic> jsonDefault =
 	{
 		"info" : ["name", "owner", "origin"],

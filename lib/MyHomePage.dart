@@ -87,7 +87,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
 			Future.delayed(Duration(seconds: 2), () {
 				cardKey.currentState.flipCard();
-				if (cardKey.currentState.isForward) Future.delayed(Duration(milliseconds: 250), () => quiz.incorrect());
+				if (cardKey.currentState.isForward) Future.delayed(Duration(milliseconds: 200), () => quiz.incorrect());
 				timerKey.currentState.reset();
 				timerKey.currentState.start();
 				waiting = false;

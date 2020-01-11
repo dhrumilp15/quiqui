@@ -68,8 +68,10 @@ class _LandingPageState extends State<LandingPage> {
 		await for (FileSystemEntity entity in entityList) {
 			print(entity.path);
 			if (entity is Directory && repoZips.contains("${entity.path.substring(entity.path.lastIndexOf("/") + 1)}.zip")) {
-				var finalPath = entity.path.substring(entity.path.lastIndexOf('/') + 1);  //To account for the "/" in file paths
-				zips.add(finalPath);
+				if (FileSystemEntity.typeSync("${entity.path}/images.json") != FileSystemEntityType.notFound) {
+					var finalPath = entity.path.substring(entity.path.lastIndexOf('/') + 1);  //To account for the "/" in file paths
+					zips.add(finalPath);
+				}
 			}
 		}
 		return zips;
