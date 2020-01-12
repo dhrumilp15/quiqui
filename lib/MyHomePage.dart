@@ -80,6 +80,9 @@ class _MyHomePageState extends State<MyHomePage> {
 	void dontKnow(BuildContext context) {
 		if (!waiting) {
 			waiting = true;
+			FormState form = formKey.currentState;
+			form.reset();
+			FocusScope.of(context).unfocus();
 //			Scaffold.of(context).showSnackBar(SnackBar(content: Text('Oh noes! That\'s ok!')));
 			timerKey.currentState.stop();
 //			print("unlucky - that's wrong");
