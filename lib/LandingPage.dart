@@ -17,6 +17,7 @@ class LandingPage extends StatefulWidget {
 
 class _LandingPageState extends State<LandingPage> {
 	final String repoLocation = "https://api.github.com/repos/dhrumilp15/quiqui_imgs/contents/";
+	String path;
 
 	Future<List<String>> zips;
 	ImageHandler imageHandler;
@@ -33,12 +34,18 @@ class _LandingPageState extends State<LandingPage> {
 	}
 
 	Future<List<String>> _fetchZips(String url) async {
-		final response = await http.get(url);
+		this.path = (await loadPath).path;
+		var response;
+		try {
+			response = await http.get(url);
+		}catch(stacktrace) {
+
+		}
 		List<String> zips = [];
 
-		if (response.statusCode == 200) {
-			List<dynamic> githubJson = jsonDecode(response.body);
 
+		if (response?.statusCode == 200) {
+			List<dynamic> githubJson = jsonDecode(response.body);
 
 			githubJson.forEach((json) {
 				if (json["name"].endsWith('.zip')) {
@@ -46,8 +53,6 @@ class _LandingPageState extends State<LandingPage> {
 				}
 			});
 			print('zips: $zips');
-		} else {
-			throw Exception("Oh No! - Github call for Download URL failed!");
 		}
 
 		List<String> existingZip = await existingZips(zips);
@@ -78,8 +83,9 @@ class _LandingPageState extends State<LandingPage> {
 	}
 
 	Future<Directory> get loadPath async {
-		var saveDir = await getApplicationDocumentsDirectory();
-
+		Directory saveDir;
+		saveDir = await getApplicationDocumentsDirectory();
+		print('saveDir.path: ${saveDir.path}');
 		return saveDir;
 	}
 
@@ -103,10 +109,14 @@ class _LandingPageState extends State<LandingPage> {
 			}
 		);
 
+		String zips = zipName;
+
 		if (!zipName.endsWith('.zip')) {
+			print("load from app docs");
 			await this.imageHandler.loadFromAppDocs();
 		} else {
 			await this.imageHandler.downloadImages();
+			zips = zipName.substring(0,zipName.length-4);
 		}
 
 		var json = this.imageHandler.getJson();
@@ -116,7 +126,9 @@ class _LandingPageState extends State<LandingPage> {
 			context,
 			MyHomePage.routeName,
 			arguments: RouteArgs(
-					json
+					json,
+					zips,
+					path
 			)
 		);
 	}

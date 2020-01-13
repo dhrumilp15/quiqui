@@ -10,8 +10,8 @@ class Quiz {
   int total;
   final random = Random();
 
-  Quiz(Map<String, dynamic> imageJson) {
-    this.dogs = shuffle(jsonHandler(imageJson, "dogs"));
+  Quiz(Map<String, dynamic> imageJson, String zipName) {
+    this.dogs = shuffle(jsonHandler(imageJson, zipName));
 	  this.seen = new List();
     this.total = this.dogs.length;
   }
