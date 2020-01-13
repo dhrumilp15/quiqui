@@ -17,6 +17,9 @@ class ImageHandler {
 	bool downloading = false;
 	String progress;
 
+	static final String urlPattern = r"(https?|http)://([-A-Z0-9.]+)(/[-A-Z0-9+&@#/%=~_|!:,.;]*)?(\?[A-Z0-9+&@#/%=~_|!:‌​,.;]*)?";
+	var match = RegExp(urlPattern, caseSensitive: false);
+
 
 	ImageHandler({this.urlPath = "https://api.github.com/repos/dhrumilp15/quiqui_imgs/contents/", this.zipName}) {
 		if (urlPath == null) {
@@ -25,8 +28,7 @@ class ImageHandler {
 	}
 
 	Future<String> get loadPath async {
-		Directory saveDir = null;
-
+		Directory saveDir;
 		saveDir = await getApplicationDocumentsDirectory();
 		print('saveDir.path: ${saveDir.path}');
 		return saveDir.path;
@@ -38,19 +40,17 @@ class ImageHandler {
 	}
 
 	Future<void> loadFromAppDocs() async {
+		print("trying to load from app docs");
 		final path = await loadPath;
-		listD(Directory(path));
-		print("Originated from loadFromAppDocs");
 
 		this.json = await parseJson(File("$path/${this.zipName}/images.json"));
-		this.json[zipName].forEach((dog) => {
-			dog["filepath"] = "$path/$zipName/${dog["filepath"]}"
-		});
+		print("this.json: ${this.json}");
 	}
 
 	Future<void> downloadImages() async {
 		final path = await loadPath;
-//		print('path: $path');
+		print('path: $path');
+		listD(Directory(path));
 
 		Map<String, dynamic> downloadJson = await _fetchDownloadUrl(this.urlPath, this.zipName);
 
@@ -97,7 +97,7 @@ class ImageHandler {
 		final bytes = File("$path/$zipName").readAsBytesSync();
 		
 		String saveDirName = "$path/${zipName.substring(0, zipName.lastIndexOf('.zip'))}"; // Ex - dogs.zip, this will produce a dog/ folder for all the images
-//		String saveDirName = path;
+		print("saveDirName: $saveDirName");
 		// Decode the Zip file
 		final archive = ZipDecoder().decodeBytes(bytes);
 
@@ -105,19 +105,15 @@ class ImageHandler {
 		// Extract the contents of the Zip archive to disk.
 		for (final file in archive) {
 			final filename = file.name;
-//			print('filename: $filename');
+			print('filename: $filename');
 			if (file.isFile) {
 					final data = file.content as List<int>;
 //					print('Saved Location: $saveDirName/$filename');
 					File('$saveDirName/' + filename)
 						..createSync(recursive: true)
 						..writeAsBytesSync(data);
-
 					if (file.name == "images.json") {
-						this.json = await parseJson(File('$saveDirName/' + filename));
-						this.json[zipName.substring(0, zipName.lastIndexOf('.zip'))].forEach((dog) => {
-							dog["filepath"] = "$path/${zipName.substring(0, zipName.lastIndexOf('.zip'))}/${dog["filepath"]}"
-						});
+						this.json = await parseJson(File('$saveDirName/' + file.name));
 					}
 			} else {
 				Directory('$saveDirName/' + filename)
@@ -129,8 +125,13 @@ class ImageHandler {
 
 	Future<Map<String, dynamic>> parseJson(File file) async {
 		String contents = await file.readAsString();
-
-		return jsonDecode(contents)[0] as Map<String, dynamic>;
+		var jsonContents = jsonDecode(contents);
+		print(jsonContents);
+		if (jsonContents is Map<String, dynamic>) {
+			return jsonContents;
+		} else {
+			return jsonContents[0] as Map<String, dynamic>;
+		}
 	}
 
 	Map<String, dynamic> _findJson(List<dynamic> githubJson, String name) {

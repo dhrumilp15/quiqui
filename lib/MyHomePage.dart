@@ -1,9 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'package:quiver/async.dart';
 import 'dart:core';
 import 'package:collection/collection.dart';
+import 'package:path_provider/path_provider.dart';
 
 //other files
 import 'package:quiqui/AnswerView.dart';
@@ -13,15 +13,16 @@ import 'package:quiqui/ImageView.dart';
 import 'package:quiqui/userInput.dart';
 import 'package:quiqui/Dog.dart';
 import 'package:quiqui/finalPage.dart';
-import 'package:quiqui/LandingPage.dart';
 import 'package:quiqui/countdownTimer.dart';
 
 class MyHomePage extends StatefulWidget {
 	static const routeName = '/HomePage';
 
-	MyHomePage({Key key, this.imageJson}) : super(key : key);
+	MyHomePage({Key key, this.imageJson, this.zipName, this.path}) : super(key : key);
 
 	final Map<String, dynamic> imageJson;
+	final String zipName;
+	final String path;
 
 	@override
 	_MyHomePageState createState() => _MyHomePageState();
@@ -34,6 +35,7 @@ class _MyHomePageState extends State<MyHomePage> {
 	GlobalKey<countdownTimerState> timerKey = GlobalKey<countdownTimerState>();
 	final GlobalKey formKey = GlobalKey<FormState>();
 	bool waiting = false;
+	String path;
 
 
 	@override
@@ -50,7 +52,7 @@ class _MyHomePageState extends State<MyHomePage> {
 	void initQuiz() async {
 //		print('widget.imageJson: ${widget.imageJson}');
 
-		quiz = Quiz(widget.imageJson);
+		quiz = Quiz(widget.imageJson, widget.zipName);
 
 		Timer.periodic(Duration(milliseconds: 20), onTick); // Update the app every 20 ms
 	}
@@ -129,13 +131,13 @@ class _MyHomePageState extends State<MyHomePage> {
 														(quiz.dogs.length > 0) ?
 														FlipCard(
 															key: cardKey,
-															front: ImageView(quiz.getDog(quiz.dogIndex).getFile),
+															front: ImageView(quiz.getDog(quiz.dogIndex).getFile, widget.zipName, widget.path),
 															back: AnswerView(quiz.getDog(quiz.dogIndex)),
 														)
-																: ImageView('lib/assets/images/icon.png'),
+																: ImageView('lib/assets/images/icon.png', widget.zipName, widget.path),
 													]
 											),
-											Divider(), // this is fine.
+											Divider(),
 											(quiz.dogs.length > 0) ?
 											userInput(
 													formKey: formKey,

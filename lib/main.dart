@@ -24,7 +24,9 @@ class MyApp extends StatelessWidget {
 	  		return MaterialPageRoute(
 				  builder: (context) {
 				  	return MyHomePage(
-						  imageJson: args.json
+						  imageJson: args.json,
+						  zipName: args.zipName,
+						  path: args.path
 					  );
 				  }
 			  );
@@ -39,6 +41,8 @@ class MyApp extends StatelessWidget {
 
 class RouteArgs {
 	final Map<String, dynamic> json;
+	final String zipName;
+	final String path;
 
-	RouteArgs(this.json);
+	RouteArgs(this.json, this.zipName, this.path);
 }
