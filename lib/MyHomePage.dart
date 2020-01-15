@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:core';
 import 'package:collection/collection.dart';
-import 'package:path_provider/path_provider.dart';
 
 //other files
 import 'package:quiqui/AnswerView.dart';
