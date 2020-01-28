@@ -1,6 +1,9 @@
 # quiqui
 
-The "Simple" Who is Who app for CCExtractor Development.
+A "Simple" Who is Who app for CCExtractor Development.
+
+[x] Packetization achieved! Check out [quiqui_imgs](https://www.github.com/dhrumilp15/quiqui_imgs)
+[x] Automatic deck generation! Check out [quiqui-support](https://www.github.com/dhrumilp15/quiqui-support)
 
 A lot of the code from the previous version of this app has been split up to make the app more modular.
 
