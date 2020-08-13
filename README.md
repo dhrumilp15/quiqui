@@ -11,3 +11,9 @@ Setting up the countdown timer and "packetization" (the ability for others to ch
 
 The app uses [quiqui_imgs](https://www.github.com/dhrumilp15/quiqui_imgs) as a pseudo-database to store packages of the images. The tool that uploads these packages to the repo is [quiqui-support](https://www.github.com/dhrumilp15/quiqui-support).
 
+
+Check out the other work I did for CC Extractor:
+
+- https://github.com/dhrumilp15/cctime
+- https://github.com/dhrumilp15/UnitConverter
+- You may also find my commits deep in the histories of https://github.com/SwagLyrics/swaglyrics-backend and https://github.com/dhrumilp15/ccextractor
