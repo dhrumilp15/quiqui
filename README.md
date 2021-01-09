@@ -13,8 +13,8 @@ The app uses [quiqui_imgs](https://www.github.com/dhrumilp15/quiqui_imgs) as a p
 
 ![A video demo of the app](quiqui-demo.gif)
 
-### Check out the other work I did for CC Extractor:
+### Check out the other work I did with CC Extractor:
 
-- https://github.com/dhrumilp15/cctime
-- https://github.com/dhrumilp15/UnitConverter
+- A variety of simpler Flutter and Rust apps: https://github.com/dhrumilp15/cctime
+- A graph-based unit converter + calculator: https://github.com/dhrumilp15/UnitConverter
 - You'll also find my commits deep in the histories of https://github.com/SwagLyrics/swaglyrics-backend and https://github.com/dhrumilp15/ccextractor
