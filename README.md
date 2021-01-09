@@ -2,8 +2,6 @@
 
 A Who is Who app for CCExtractor Development. Learn things quickly with flashcards!
 
-![A video demo of the app](quiqui-demo.gif)
-
 - [x] Packetization achieved! Check out [quiqui_imgs](https://www.github.com/dhrumilp15/quiqui_imgs) to see the psuedo-database for this app
 - [x] Automatic deck generation! Check out [quiqui-support](https://www.github.com/dhrumilp15/quiqui-support) to see the service that scrapes images from the internet for the app
 
@@ -13,8 +11,9 @@ Setting up the countdown timer and "packetization" (the ability for others to ch
 
 The app uses [quiqui_imgs](https://www.github.com/dhrumilp15/quiqui_imgs) as a pseudo-database to store zipfiles of the images. The tool that uploads these packages to the repo is [quiqui-support](https://www.github.com/dhrumilp15/quiqui-support).
 
+![A video demo of the app](quiqui-demo.gif)
 
-Check out the other work I did for CC Extractor:
+### Check out the other work I did for CC Extractor:
 
 - https://github.com/dhrumilp15/cctime
 - https://github.com/dhrumilp15/UnitConverter
