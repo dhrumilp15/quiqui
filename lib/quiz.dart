@@ -12,12 +12,12 @@ class Quiz {
 
   Quiz(Map<String, dynamic> imageJson, String zipName) {
     this.dogs = shuffle(jsonHandler(imageJson, zipName));
-	  this.seen = new List();
+    this.seen = new List();
     this.total = this.dogs.length;
   }
 
   void correct() {
-  	if (!(dogs.length > 0)) return;
+    if (!(dogs.length > 0)) return;
     Dog imp = getDog(dogIndex);
     if (dogs.contains(imp) && !seen.contains(imp)) score++;
     dogs.remove(imp);
@@ -31,34 +31,32 @@ class Quiz {
     dogIndex++;
   }
 
-  Dog getDog(int dogindex) {
+  Dog getDog(int dogIndex) {
     if (dogs.length > 0) {
-    	this.dogIndex = dogindex % dogs.length;
+      this.dogIndex = dogIndex % dogs.length;
     } else {
-    	return null;
+      return null;
     }
     return dogs[this.dogIndex];
   }
 
   List shuffle(List items) {
-	  for (var i = items.length - 1; i > 0; i--) {
+    for (var i = items.length - 1; i > 0; i--) {
+      var n = random.nextInt(i + 1);
 
-		  var n = random.nextInt(i + 1);
+      var temp = items[i];
+      items[i] = items[n];
+      items[n] = temp;
+    }
 
-		  var temp = items[i];
-		  items[i] = items[n];
-		  items[n] = temp;
-	  }
-
-	  return items;
+    return items;
   }
 
   int get getScore {
-  	return this.score;
+    return this.score;
   }
 
   List<Dog> jsonHandler(Map<String, dynamic> json, String key) {
-	  return json[key].map<Dog>((dogJson) => Dog.fromJson(dogJson)).toList();
+    return json[key].map<Dog>((dogJson) => Dog.fromJson(dogJson)).toList();
   }
-
 }
